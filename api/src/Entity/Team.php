@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\TeamRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ApiResource()
- * @ORM\Entity(repositoryClass=TeamRepository::class)
+ * @ORM\Entity()
  */
 class Team
 {
@@ -43,6 +44,12 @@ class Team
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $Avatar;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="ownedTeams")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $owner;
 
     public function getId(): ?int
     {
@@ -105,6 +112,18 @@ class Team
     public function setAvatar(?string $Avatar): self
     {
         $this->Avatar = $Avatar;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
 
         return $this;
     }

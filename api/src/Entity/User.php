@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping\ManyToOne;
 
 /**
- * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\Entity()
  * @ORM\Table(name="`user`")
  * @ApiResource
  */
@@ -67,6 +68,16 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $Avatar;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Team::class, mappedBy="owner")
+     */
+    private $ownedTeams;
+
+    public function __construct()
+    {
+        $this->ownedTeams = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -209,6 +220,37 @@ class User implements UserInterface
     public function setAvatar(?string $Avatar): self
     {
         $this->Avatar = $Avatar;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Team[]
+     */
+    public function getOwnedTeams(): Collection
+    {
+        return $this->ownedTeams;
+    }
+
+    public function addOwnedTeam(Team $ownedTeam): self
+    {
+        if (!$this->ownedTeams->contains($ownedTeam)) {
+            $this->ownedTeams[] = $ownedTeam;
+            $ownedTeam->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOwnedTeam(Team $ownedTeam): self
+    {
+        if ($this->ownedTeams->contains($ownedTeam)) {
+            $this->ownedTeams->removeElement($ownedTeam);
+            // set the owning side to null (unless already changed)
+            if ($ownedTeam->getOwner() === $this) {
+                $ownedTeam->setOwner(null);
+            }
+        }
 
         return $this;
     }
